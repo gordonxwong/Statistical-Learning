@@ -1,0 +1,198 @@
+---
+title: "Homework 3"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##1. 
+1. Using basic statistical properties of the variance, as well as singlevariable calculus, derive (5.6). In other words, prove that is given by (5.6) does indeed minimize *$$Var({\alpha}X+(1-{\alpha})Y)$$*.
+
+
+**Answers:**
+From the question, we decompose the equation and we obatian the result:
+
+*$$Var({\alpha}X+(1-{\alpha})Y)={\alpha}^2Var(X)+(1-{\alpha})^2Var(Y)+2{\alpha}(1-{\alpha}){\sigma}_X{\sigma}_Y$$*
+
+Then we calculate the derivative of the function for *$${\alpha}$$*:
+
+*$$2{\alpha}Var(X)+2{\alpha}Var(Y)-2Var(Y)+2{\sigma}_X{\sigma}_Y-4{\alpha}{\sigma}_X{\sigma}_Y$$*
+
+Since it is linear monotonic decreasing function for *$${\alpha}$$*, we take the *$$f({\alpha})=0$$* and we have *$${\alpha}=\frac{Var(Y)-{\sigma}_X{\sigma}_Y}{Var(X)+Var(Y)-2{\sigma}_X{\sigma}_Y}$$* to attain the minimum
+
+##3.
+We now review k-fold cross-validation.
+
+(a) Explain how k-fold cross-validation is implemented. 
+
+(b) What are the advantages and disadvantages of k-fold crossvalidation relative to: i. The validation set approach? ii. LOOCV?
+
+**Answers:**
+
+(a) We randomly divide the data sets into k folds in equal sizes. We take the first fold as validation and we use the k-1 folds for our training set of the model. We calculate the *$$MSE_1$$* for our held-out fold and repeated k times. Finally, we obation *$$MSE_1, MSE_2,...,MSE_k$$*. Then the k-fold CV estimate will be
+
+*$$CV_{(k)}=\frac{1}{k}\sum^k_{n=1}MSE_n$$*
+
+(b)
+
+i. The k-fold cross validation is better than the validation set approach because if we just simply split the training and testing data set one time the testing error will be highly variable. Besides, the validation set approach does not use the whole data set to train so it will perform worse than k-fold cross validation.
+
+ii. Compared with LOOCV, the k-fold cross validation requires less computational power and has less procedures variance because the training data for LOOCV are highly correlated. However, one the other hand, LOOCV has less test error rate because it almost uses the whole data set to train so there is a trade-off between them.
+
+
+
+##5. 
+In Chapter 4, we used logistic regression to predict the probability of default using income and balance on the Default data set. We will now estimate the test error of this logistic regression model using the validation set approach. Do not forget to set a random seed before beginning your analysis.
+
+(b) Using the validation set approach, estimate the test error of this model. In order to do this, you must perform the following steps: 
+
+i. Split the sample set into a training set and a validation set.
+
+ii. Fit a multiple logistic regression model using only the training observations. 
+
+iii. Obtain a prediction of default status for each individual in the validation set by computing the posterior probability of default for that individual, and classifying the individual to the default category if the posterior probability is greater than 0.5. 
+
+iv. Compute the validation set error, which is the fraction of the observations in the validation set that are misclassi???ed. 
+
+(c) Repeat the process in (b) three times, using three di???erent splits of the observations into a training set and a validation set. Comment on the results obtained.
+
+**Answers:**
+(b)
+
+```{r }
+library(ISLR)
+names(Default)
+dim(Default)
+
+set.seed(1)
+train= sample(10000,5000)
+
+glm.fit =glm(default~income+balance+student,data=Default, subset = train,family=binomial)
+probs <- predict(glm.fit, newdata = Default[-train,], type = "response")
+
+glm.pred=rep("No",length(probs))
+glm.pred[probs>.5]="Yes"         #Cutoff probability = 0.5
+table(glm.pred,Default[-train,]$default)
+mean(glm.pred != Default[-train, ]$default)
+```
+(c)
+
+```{r }
+library(ISLR)
+train= sample(10000,5000)
+glm.fit =glm(default~income+balance+student,data=Default, subset = train,family=binomial)
+probs <- predict(glm.fit, newdata = Default[-train,], type = "response")
+glm.pred=rep("No",length(probs))
+glm.pred[probs>.5]="Yes"
+mean(glm.pred != Default[-train, ]$default)
+library(ISLR)
+train= sample(10000,5000)
+glm.fit =glm(default~income+balance+student,data=Default, subset = train,family=binomial)
+probs <- predict(glm.fit, newdata = Default[-train,], type = "response")
+glm.pred=rep("No",length(probs))
+glm.pred[probs>.5]="Yes"
+mean(glm.pred != Default[-train, ]$default)
+library(ISLR)
+train= sample(10000,5000)
+glm.fit =glm(default~income+balance+student,data=Default, subset = train,family=binomial)
+probs <- predict(glm.fit, newdata = Default[-train,], type = "response")
+glm.pred=rep("No",length(probs))
+glm.pred[probs>.5]="Yes"
+mean(glm.pred != Default[-train, ]$default)
+```
+After three different splits of the training and test data sets, we have three misclassification rate. Validation estimate of the test error rate can be variable
+
+##5. 
+Suppose we produce ten bootstrapped samples from a data set containing red and green classes. We then apply a classi???cation tree to each bootstrapped sample and, for a specific value of X, produce 10 estimates of *$$P(Class is Red|X)$$*: 0.1,0.15,0.2,0.2,0.55,0.6,0.6,0.65,0.7, and 0.75.
+
+There are two common ways to combine these results together into a single class prediction. One is the majority vote approach discussed in this chapter. The second approach is to classify based on the average probability. In this example, what is the final classification under each of these two approaches?
+
+**Answers:**
+
+For majority votes,it will be classified as red classes because there are 6 out of 10 larger than 0.5. 
+
+```{r}
+mean(c(0.1,0.15,0.2,0.2,0.55,0.6,0.6,0.65,0.7,0.75))
+```
+
+For average votes, the mean is 0.45 less than 0.5. It will be classified as green classes because it is than 0.5.
+
+Q8. In the lab, a classification tree was applied to the "Carseats" data set after converting "Sales" into a qualitative response variable. Now we will seek to predict "Sales" using regression trees and related approaches, treating the response as a quantitative variable.
+
+a. Split the data set into a training set and a test set.
+b. Fit a regression tree to the training set. Plot the tree, and interpret the results. What test error rate do you obtain ?
+c. Use cross-validation in order to determine the optimal level of tree complexity. Does pruning the tree improve the test error rate ?
+d. Use the bagging approach in order to analyze this data. What test error rate do you obtain ? Use the "importance()" function to determine which variables are most important.
+e. Use random forests to analyze this data. What test error rate do you obtain ? Use the "importance()" function to determine which variables are most important. Describe the effect of mm, the number of variables considered at each split, on the error rate obtained.
+
+**Answers:**
+a.
+b.
+
+```{r}
+library(ISLR)
+set.seed(2)
+train.sample<- sample(nrow(Carseats), nrow(Carseats) / 2)
+train <- Carseats[train.sample, ]
+test <- Carseats[-train.sample, ]
+library(tree)
+tree.carseats <- tree(Sales ~ ., data = train)
+summary(tree.carseats)
+```
+```{r}
+plot(tree.carseats)
+text(tree.carseats, pretty = 0)
+```
+```{r}
+set.seed(2)
+y.pred <- predict(tree.carseats, newdata = test)
+mean((y.pred - test$Sales)^2)
+```
+The test MSE is 4.84 for set.seed(2)
+
+c.
+```{r}
+set.seed(2)
+cv.carseats <- cv.tree(tree.carseats)
+plot(cv.carseats$size, cv.carseats$dev, type = "b")
+```
+The tree size of 13 is selected in cross-validation.
+```{r}
+set.seed(2)
+prune.carseats <- prune.tree(tree.carseats, best = 13)
+plot(prune.carseats)
+text(prune.carseats, pretty = 0)
+y.pred <- predict(prune.carseats, newdata = test)
+mean((y.pred - test$Sales)^2)
+```
+
+The MSE increses to 4.91 for pruning tree
+
+d.
+```{r}
+library(randomForest)
+set.seed(2)
+bag.carseats <- randomForest(Sales ~ ., data = train, mtry = 10, ntree = 100, importance = TRUE)
+yhat.bag <- predict(bag.carseats, newdata = test)
+mean((yhat.bag - test$Sales)^2)
+importance(bag.carseats)
+#varImpPlot (bag.carseats) plot the variable importance
+```
+
+For bagging the mtry=p, the MSE decreases to 2.51 and the most important variable is Price.
+
+```{r}
+library(randomForest)
+set.seed(2)
+rf.carseats <- randomForest(Sales ~ ., data = train, mtry = 3, ntree = 100, importance = TRUE)
+ypred.rf <- predict(rf.carseats, newdata = test)
+mean((ypred.rf- test$Sales)^2)
+importance(rf.carseats)
+```
+
+For random forest and each split, we consider *$$mtry=\sqrt{p}$$* for classification. The important variable is still Price but the MSE increases to 3.12. It does not improve the model compared to bagging in this case.
